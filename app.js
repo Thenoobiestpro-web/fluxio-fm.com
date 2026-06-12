@@ -82,7 +82,14 @@ function playStation(station, cardEl, skipFade) {
     const m = CAT_META[station.cat] || {emoji:"📻", grad:"#222"};
     const npArt = document.getElementById("np-art");
     npArt.style.background = m.grad; npArt.textContent = m.emoji;
-    document.getElementById("np-name").textContent = station.name;
+    const nameEl = document.getElementById("np-name");
+    const nameText = nameEl.querySelector(".np-name-text");
+    if (nameText) {
+      nameText.textContent = station.name;
+      updateNpNameScroll();
+    } else {
+      nameEl.textContent = station.name;
+    }
     document.getElementById("np-status").innerHTML = "Connecting…";
     updateFavBtn(); setPlayIcon("pause"); setLoading(true);
     document.querySelectorAll(".station-card").forEach(c => {
@@ -104,6 +111,29 @@ function addToRecent(station) {
   if (r.length > 20) r = r.slice(0,20);
   saveRecent(r);
 }
+
+function updateNpNameScroll() {
+  const nameEl = document.getElementById("np-name");
+  if (!nameEl) return;
+  const nameText = nameEl.querySelector(".np-name-text");
+  if (!nameText) return;
+
+  const containerWidth = nameEl.clientWidth;
+  const textWidth = nameText.scrollWidth;
+  if (textWidth > containerWidth) {
+    const duration = Math.max(8, (textWidth / containerWidth) * 6);
+    nameText.style.animationDuration = `${duration}s`;
+    nameEl.classList.add("marquee");
+  } else {
+    nameEl.classList.remove("marquee");
+    nameText.style.animationDuration = "";
+  }
+}
+
+window.addEventListener("resize", () => {
+  const nameEl = document.getElementById("np-name");
+  if (nameEl && nameEl.querySelector(".np-name-text")) updateNpNameScroll();
+});
 
 /* ── AUDIO EVENTS ── */
 audio.addEventListener("playing", () => {
